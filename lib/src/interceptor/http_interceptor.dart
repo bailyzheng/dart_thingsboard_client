@@ -129,9 +129,9 @@ class HttpInterceptor extends Interceptor {
   Future _refreshTokenAndRetry(DioError error, ErrorInterceptorHandler handler,
       InterceptorConfig config) async {
     // ignore: deprecated_member_use
-    _dio.interceptors.requestLock.lock();
+    // _dio.interceptors.requestLock.lock();
     // ignore: deprecated_member_use
-    _dio.interceptors.responseLock.lock();
+    // _dio.interceptors.responseLock.lock();
     try {
       await _tbClient.refreshJwtToken(
           internalDio: _internalDio, interceptRefreshToken: true);
@@ -142,9 +142,9 @@ class HttpInterceptor extends Interceptor {
       return _handleError(e, error.requestOptions, handler, true);
     } finally {
       // ignore: deprecated_member_use
-      _dio.interceptors.requestLock.unlock();
+      // _dio.interceptors.requestLock.unlock();
       // ignore: deprecated_member_use
-      _dio.interceptors.responseLock.unlock();
+      // _dio.interceptors.responseLock.unlock();
     }
     return _retryRequest(error, handler);
   }

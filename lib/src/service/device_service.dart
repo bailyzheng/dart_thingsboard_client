@@ -120,10 +120,14 @@ class DeviceService {
 
   Future<PageData<DeviceInfo>> getTenantDeviceInfos(PageLink pageLink,
       {String type = '',
+      bool? active,
       String deviceProfileId = '',
       RequestConfig? requestConfig}) async {
     var queryParams = pageLink.toQueryParameters();
     queryParams['type'] = type;
+    if (active != null) {
+      queryParams['active'] = active;
+    }
     queryParams['deviceProfileId'] = deviceProfileId;
     var response = await _tbClient.get<Map<String, dynamic>>(
         '/api/tenant/deviceInfos',

@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import 'error/thingsboard_error.dart';
 import 'http/http_utils.dart';
@@ -91,6 +92,15 @@ class ThingsboardClient {
     dio.interceptors.clear();
     dio.interceptors.add(HttpInterceptor(dio, tbClient, tbClient._loadStarted,
         tbClient._loadFinished, tbClient._onError));
+    dio.interceptors.add(PrettyDioLogger(
+        requestHeader: true,
+        requestBody: true,
+        responseBody: true,
+        responseHeader: false,
+        error: true,
+        compact: true,
+        maxWidth: 90
+    ));
     return tbClient;
   }
 
