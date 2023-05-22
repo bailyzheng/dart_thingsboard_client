@@ -18,3 +18,4 @@ doc/api/
 .idea
 
 tb_client_storage.json
+.DS_Store
