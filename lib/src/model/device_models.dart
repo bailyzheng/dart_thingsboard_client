@@ -778,7 +778,6 @@ class Device extends AdditionalInfoBased<DeviceId>
   String name;
   String type;
   String? label;
-  bool? active;
   DeviceProfileId? deviceProfileId;
   OtaPackageId? firmwareId;
   OtaPackageId? softwareId;
@@ -795,7 +794,6 @@ class Device extends AdditionalInfoBased<DeviceId>
         name = json['name'],
         type = json['type'],
         label = json['label'],
-        active = json['active'],
         deviceProfileId = DeviceProfileId.fromJson(json['deviceProfileId']),
         firmwareId = json['firmwareId'] != null
             ? OtaPackageId.fromJson(json['firmwareId'])
@@ -822,9 +820,6 @@ class Device extends AdditionalInfoBased<DeviceId>
     json['type'] = type;
     if (label != null) {
       json['label'] = label;
-    }
-    if (active != null) {
-      json['active'] = active;
     }
     if (deviceProfileId != null) {
       json['deviceProfileId'] = deviceProfileId!.toJson();
@@ -897,11 +892,13 @@ class DeviceInfo extends Device {
   String? customerTitle;
   bool? customerIsPublic;
   String? deviceProfileName;
+  bool? active;
 
   DeviceInfo.fromJson(Map<String, dynamic> json)
       : customerTitle = json['customerTitle'],
         customerIsPublic = json['customerIsPublic'],
         deviceProfileName = json['deviceProfileName'],
+        active = json['active'],
         super.fromJson(json);
 
   @override
