@@ -11,6 +11,7 @@ import 'interceptor/http_interceptor.dart';
 import 'model/model.dart';
 import 'service/service.dart';
 import 'storage/storage.dart';
+import 'package:flutter/foundation.dart';
 
 typedef TbComputeCallback<Q, R> = FutureOr<R> Function(Q message);
 typedef TbCompute = Future<R> Function<Q, R>(
@@ -92,15 +93,17 @@ class ThingsboardClient {
     dio.interceptors.clear();
     dio.interceptors.add(HttpInterceptor(dio, tbClient, tbClient._loadStarted,
         tbClient._loadFinished, tbClient._onError));
-    dio.interceptors.add(PrettyDioLogger(
-        requestHeader: true,
-        requestBody: true,
-        responseBody: true,
-        responseHeader: false,
-        error: true,
-        compact: true,
-        maxWidth: 90
-    ));
+    if (kDebugMode) {
+      dio.interceptors.add(PrettyDioLogger(
+          requestHeader: true,
+          requestBody: true,
+          responseBody: true,
+          responseHeader: false,
+          error: true,
+          compact: true,
+          maxWidth: 90
+      ));
+    }
     return tbClient;
   }
 
