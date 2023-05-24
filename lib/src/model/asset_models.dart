@@ -170,7 +170,9 @@ class Asset extends AdditionalInfoBased<AssetId>
         name = json['name'],
         type = json['type'],
         label = json['label'],
-        assetProfileId = AssetProfileId.fromJson(json['assetProfileId']),
+        assetProfileId = json['assetProfileId'] != null
+            ? AssetProfileId.fromJson(json['assetProfileId'])
+            : null,
         externalId = json['externalId'] != null
             ? AssetId.fromJson(json['externalId'])
             : null,
