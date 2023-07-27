@@ -1,6 +1,8 @@
 import 'id/tenant_id.dart';
 
 enum EntityType {
+  MHCAST,
+  MHOSS,
   TENANT,
   TENANT_PROFILE,
   CUSTOMER,

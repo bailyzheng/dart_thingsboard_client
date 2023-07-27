@@ -1,3 +1,5 @@
+import 'mhcast_id.dart';
+import 'mhoss_id.dart';
 import 'ota_package_id.dart';
 import 'alarm_id.dart';
 import 'api_usage_state_id.dart';
@@ -45,6 +47,10 @@ abstract class EntityId extends HasUuid {
 
   factory EntityId.fromTypeAndUuid(EntityType type, String uuid) {
     switch (type) {
+      case EntityType.MHCAST:
+        return MHCastId(uuid);
+      case EntityType.MHOSS:
+        return MHOssId(uuid);
       case EntityType.TENANT:
         return TenantId(uuid);
       case EntityType.TENANT_PROFILE:
