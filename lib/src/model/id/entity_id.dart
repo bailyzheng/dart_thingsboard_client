@@ -1,3 +1,9 @@
+import 'package:thingsboard_client/src/model/id/mhgood_id.dart';
+import 'package:thingsboard_client/src/model/id/mhmedia_id.dart';
+import 'package:thingsboard_client/src/model/id/mhmessage_id.dart';
+import 'package:thingsboard_client/src/model/id/mhorder_id.dart';
+import 'package:thingsboard_client/src/model/id/mhscreen_id.dart';
+
 import 'mhcast_id.dart';
 import 'mhoss_id.dart';
 import 'ota_package_id.dart';
@@ -49,6 +55,16 @@ abstract class EntityId extends HasUuid {
     switch (type) {
       case EntityType.MHCAST:
         return MHCastId(uuid);
+      case EntityType.MHSCREEN:
+        return MHScreenId(uuid);
+      case EntityType.MHMEDIA:
+        return MHMediaId(uuid);
+      case EntityType.MHGOOD:
+        return MHGoodId(uuid);
+      case EntityType.MHORDER:
+        return MHOrderId(uuid);
+      case EntityType.MHMESSAGE:
+        return MHMessageId(uuid);
       case EntityType.MHOSS:
         return MHOssId(uuid);
       case EntityType.TENANT:

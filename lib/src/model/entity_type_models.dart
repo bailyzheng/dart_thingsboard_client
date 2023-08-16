@@ -6,6 +6,7 @@ enum EntityType {
   MHMEDIA,
   MHGOOD,
   MHORDER,
+  MHMESSAGE,
   MHOSS,
   TENANT,
   TENANT_PROFILE,

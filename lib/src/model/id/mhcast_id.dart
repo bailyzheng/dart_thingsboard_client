@@ -1,5 +1,4 @@
-import '../entity_type_models.dart';
-import 'entity_id.dart';
+import 'package:thingsboard_client/thingsboard_client.dart';
 
 class MHCastId extends EntityId {
   MHCastId(String id) : super(EntityType.MHCAST, id);
