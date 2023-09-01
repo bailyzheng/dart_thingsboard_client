@@ -1,3 +1,5 @@
+import 'package:thingsboard_client/src/model/id/mhactivation_code_id.dart';
+import 'package:thingsboard_client/src/model/id/mhactivation_id.dart';
 import 'package:thingsboard_client/src/model/id/mhgood_id.dart';
 import 'package:thingsboard_client/src/model/id/mhmedia_id.dart';
 import 'package:thingsboard_client/src/model/id/mhmessage_id.dart';
@@ -65,6 +67,10 @@ abstract class EntityId extends HasUuid {
         return MHOrderId(uuid);
       case EntityType.MHMESSAGE:
         return MHMessageId(uuid);
+      case EntityType.MHACTIVATION:
+        return MHActivationId(uuid);
+      case EntityType.MHACTIVATION_CODE:
+        return MHActivationCodeId(uuid);
       case EntityType.MHOSS:
         return MHOssId(uuid);
       case EntityType.TENANT:
