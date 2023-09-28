@@ -1,10 +1,11 @@
 import 'entity_type_models.dart';
 import 'id/entity_id.dart';
 
+const CAST_TYPE = 'Cast';
 const CONTAINS_TYPE = 'Contains';
 const MANAGES_TYPE = 'Manages';
 
-enum RelationTypeGroup { COMMON, ALARM, DASHBOARD, RULE_CHAIN, RULE_NODE }
+enum RelationTypeGroup { COMMON, MHCAST, ALARM, DASHBOARD, RULE_CHAIN, RULE_NODE }
 
 RelationTypeGroup relationTypeGroupFromString(String value) {
   return RelationTypeGroup.values.firstWhere(
