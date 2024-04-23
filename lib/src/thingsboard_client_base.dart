@@ -73,7 +73,6 @@ class ThingsboardClient {
       UserLoadedCallback? onUserLoaded,
       MfaAuthCallback? onMfaAuth,
       ErrorCallback? onError,
-      Interceptor? dioInterceptor,
       LoadStartedCallback? onLoadStarted,
       LoadFinishedCallback? onLoadFinished,
       TbCompute? computeFunc}) {
@@ -92,9 +91,6 @@ class ThingsboardClient {
     dio.interceptors.clear();
     dio.interceptors.add(HttpInterceptor(dio, tbClient, tbClient._loadStarted,
         tbClient._loadFinished, tbClient._onError));
-    if (dioInterceptor != null) {
-      dio.interceptors.add(dioInterceptor);
-    }
     return tbClient;
   }
 
@@ -109,6 +105,10 @@ class ThingsboardClient {
       this._loadFinishedCallback,
       this._computeFunc)
       : _storage = storage ?? InMemoryStorage();
+
+  void addDioInterceptor(Interceptor dioInterceptor) {
+    _dio.interceptors.add(dioInterceptor);
+  }
 
   Future<void> _clearJwtToken() async {
     await _setUserFromJwtToken(null, null, true);
