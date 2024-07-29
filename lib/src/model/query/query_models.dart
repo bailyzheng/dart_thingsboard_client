@@ -1226,6 +1226,12 @@ class EntityData {
     return null;
   }
 
+  Map<String, dynamic> toJson() {
+    var json = <String, dynamic>{};
+    json['entityId'] = entityId.toJson();
+    return json;
+  }
+
   @override
   String toString() {
     return 'EntityData{entityId: $entityId, latest: $latest, timeseries: $timeseries, aggLatest: $aggLatest}';
