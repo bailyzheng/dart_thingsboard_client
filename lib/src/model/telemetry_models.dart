@@ -976,6 +976,13 @@ class TsValue {
       : ts = json[0],
         value = json[1];
 
+  Map<String, dynamic> toJson() {
+    Map<String, dynamic> json = {};
+    json['ts'] = ts;
+    json['value'] = value;
+    return json;
+  }
+
   @override
   String toString() {
     return 'TsValue{ts: $ts, value: $value}';

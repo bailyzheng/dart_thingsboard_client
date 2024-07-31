@@ -1229,6 +1229,8 @@ class EntityData {
   Map<String, dynamic> toJson() {
     var json = <String, dynamic>{};
     json['entityId'] = entityId.toJson();
+    json['latest'] = latest.map((k, v) => MapEntry(k.toShortString(), v));
+    // json['timeseries'] = timeseries;
     return json;
   }
 
