@@ -1,7 +1,6 @@
 import 'entity_type_models.dart';
 import 'id/entity_id.dart';
 
-const CAST_TYPE = 'Cast';
 const CONTAINS_TYPE = 'Contains';
 const MANAGES_TYPE = 'Manages';
 
