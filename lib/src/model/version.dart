@@ -1,13 +1,16 @@
 class PlatformVersionMatcher {
-  static const int minPlatformVersionInt = 3630;
+  static const int minPlatformVersionInt = 3800;
 
-  static bool isSupportedPlatformVersion(PlatformVersion platformVersion) {
+  static bool isSupportedPlatformVersion(
+    PlatformVersion platformVersion, {
+    required String type,
+  }) {
+    if (type != 'CE') {
+      return false;
+    }
+
     try {
       if (platformVersion.versionInt() < minPlatformVersionInt) {
-        return false;
-      }
-      if (platformVersion.versionCode != null &&
-          platformVersion.versionCode!.isNotEmpty) {
         return false;
       }
     } catch (e) {

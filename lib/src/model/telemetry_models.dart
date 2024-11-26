@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
@@ -6,8 +7,8 @@ import 'package:collection/collection.dart';
 import '../error/thingsboard_error.dart';
 import 'entity_type_models.dart';
 import 'id/entity_id.dart';
-import 'notification_models.dart';
 import 'page/page_data.dart';
+import 'push_notification_models.dart';
 import 'query/query_models.dart';
 
 enum DataType { STRING, LONG, BOOLEAN, DOUBLE, JSON }
@@ -338,7 +339,7 @@ abstract class RestJsonConverter {
       var result = <TsKvEntry>[];
       timeseries.forEach((key, value) {
         var values = value as List<dynamic>;
-        result.addAll(values.map((ts) {
+        result.addAll(values.where((ts) => ts[VALUE] != null).map((ts) {
           var entry = _parseValue(key, ts[VALUE]);
           return BasicTsKvEntry(ts[TS] as int, entry);
         }));
@@ -363,7 +364,7 @@ abstract class RestJsonConverter {
             errorCode: ThingsBoardErrorCode.invalidArguments);
       }
     } else {
-      return JsonDataEntry(key, value.toString());
+      return JsonDataEntry(key, jsonEncode(value));
     }
   }
 
@@ -1240,16 +1241,16 @@ class NotificationCountUpdate extends CmdUpdate {
 }
 
 class NotificationsUpdate extends NotificationCountUpdate {
-  final Notification? update;
-  final List<Notification>? notifications;
+  final PushNotification? update;
+  final List<PushNotification>? notifications;
 
   NotificationsUpdate.fromJson(Map<String, dynamic> json)
       : update = json['update'] != null
-            ? Notification.fromJson(json['update'])
+            ? PushNotification.fromJson(json['update'])
             : null,
         notifications = json['notifications'] != null
             ? (json['notifications'] as List<dynamic>)
-                .map((e) => Notification.fromJson(e))
+                .map((e) => PushNotification.fromJson(e))
                 .toList()
             : null,
         super.fromJson(json);

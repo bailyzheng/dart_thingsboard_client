@@ -1,12 +1,4 @@
-import 'additional_info_based.dart';
-import 'id/customer_id.dart';
-import 'id/tenant_id.dart';
-
-import 'authority_enum.dart';
-import 'has_customer_id.dart';
-import 'has_name.dart';
-import 'has_tenant_id.dart';
-import 'id/user_id.dart';
+import 'package:thingsboard_client/thingsboard_client.dart';
 
 class AuthUser {
   late String sub;
@@ -141,5 +133,39 @@ class User extends AdditionalInfoBased<UserId>
   String toString() {
     return 'User{${additionalInfoBasedString('tenantId: $tenantId, customerId: $customerId, email: $email, '
         'authority: ${authority.toShortString()}, firstName: $firstName, lastName: $lastName, phone: $phone')}}';
+  }
+}
+
+class UserInfo {
+  UserInfo(
+    this.id, {
+    required this.email,
+    this.firstName,
+    this.lastName,
+  });
+
+  final UserId id;
+  String email;
+  String? firstName;
+  String? lastName;
+
+  UserInfo.fromJson(Map<String, dynamic> json)
+      : id = UserId.fromJson(json['id']),
+        email = json['email'],
+        firstName = json['firstName'],
+        lastName = json['lastName'];
+}
+
+class UsersAssignQuery {
+  const UsersAssignQuery({
+    required this.pageLink,
+    required this.id,
+  });
+
+  final PageLink pageLink;
+  final AlarmId id;
+
+  Map<String, dynamic> toQueryParameters() {
+    return pageLink.toQueryParameters();
   }
 }

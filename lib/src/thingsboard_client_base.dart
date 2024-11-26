@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import 'error/thingsboard_error.dart';
 import 'http/http_utils.dart';
@@ -67,16 +68,20 @@ class ThingsboardClient {
   QueueService? _queueService;
   EntitiesVersionControlService? _entitiesVersionControlService;
   TwoFactorAuthService? _twoFactorAuthService;
+  NotificationsService? _notificationService;
 
-  factory ThingsboardClient(String apiEndpoint,
-      {TbStorage? storage,
-      UserLoadedCallback? onUserLoaded,
-      MfaAuthCallback? onMfaAuth,
-      ErrorCallback? onError,
-      LoadStartedCallback? onLoadStarted,
-      LoadFinishedCallback? onLoadFinished,
-      TbCompute? computeFunc}) {
-    var dio = Dio();
+  factory ThingsboardClient(
+    String apiEndpoint, {
+    TbStorage? storage,
+    UserLoadedCallback? onUserLoaded,
+    MfaAuthCallback? onMfaAuth,
+    ErrorCallback? onError,
+    LoadStartedCallback? onLoadStarted,
+    LoadFinishedCallback? onLoadFinished,
+    TbCompute? computeFunc,
+    bool debugMode = false,
+  }) {
+    final dio = Dio();
     dio.options.baseUrl = apiEndpoint;
     final tbClient = ThingsboardClient._internal(
         apiEndpoint,
@@ -89,8 +94,27 @@ class ThingsboardClient {
         onLoadFinished,
         computeFunc ?? syncCompute);
     dio.interceptors.clear();
-    dio.interceptors.add(HttpInterceptor(dio, tbClient, tbClient._loadStarted,
-        tbClient._loadFinished, tbClient._onError));
+
+    if (debugMode) {
+      dio.interceptors.add(
+        PrettyDioLogger(
+          requestHeader: true,
+          requestBody: true,
+          responseHeader: true,
+          responseBody: true,
+        ),
+      );
+    }
+    dio.interceptors.add(
+      HttpInterceptor(
+        dio,
+        tbClient,
+        tbClient._loadStarted,
+        tbClient._loadFinished,
+        tbClient._onError,
+      ),
+    );
+
     return tbClient;
   }
 
@@ -110,8 +134,8 @@ class ThingsboardClient {
     _dio.interceptors.add(dioInterceptor);
   }
 
-  Future<void> _clearJwtToken() async {
-    await _setUserFromJwtToken(null, null, true);
+  Future<void> _clearJwtToken({bool notifyUser = true}) async {
+    await _setUserFromJwtToken(null, null, notifyUser);
   }
 
   Future<void> _setUserFromJwtToken(
@@ -140,18 +164,22 @@ class ThingsboardClient {
   }
 
   Future<void> _checkPlatformVersion() async {
-    var version = 'unknown';
+    String version = 'unknown';
+    String type = 'unknown';
     var response = await get<Map<String, dynamic>>('/api/system/info',
         options:
             defaultHttpOptionsFromConfig(RequestConfig(ignoreLoading: true)));
     if (response.data != null) {
       version = response.data!['version'];
+      type = response.data!['type'] ?? 'unknown';
     }
     bool supported = false;
     try {
       _platformVersion = PlatformVersion.fromString(version);
-      supported =
-          PlatformVersionMatcher.isSupportedPlatformVersion(_platformVersion!);
+      supported = PlatformVersionMatcher.isSupportedPlatformVersion(
+        _platformVersion!,
+        type: type,
+      );
     } catch (e) {
       supported = false;
     }
@@ -282,6 +310,26 @@ class ThingsboardClient {
     }
   }
 
+  Future<Response<T>> put<T>(
+    String path, {
+    data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) async {
+    try {
+      return _dio.put(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+      );
+    } catch (e) {
+      throw toThingsboardError(e);
+    }
+  }
+
   Future<R> compute<Q, R>(TbComputeCallback<Q, R> callback, Q message) {
     return _computeFunc!(callback, message);
   }
@@ -320,14 +368,32 @@ class ThingsboardClient {
     await _setUserFromJwtToken(jwtToken, refreshToken, notify);
   }
 
-  Future<void> logout({RequestConfig? requestConfig}) async {
+  Future<void> logout(
+      {RequestConfig? requestConfig, bool notifyUser = true}) async {
     try {
       await post('/api/auth/logout',
           options: defaultHttpOptionsFromConfig(requestConfig));
-      await _clearJwtToken();
+      await _clearJwtToken(notifyUser: notifyUser);
     } catch (e) {
-      await _clearJwtToken();
+      await _clearJwtToken(notifyUser: notifyUser);
     }
+  }
+
+  Future<LoginResponse> getLoginDataBySecretKey({
+    required String host,
+    required String key,
+  }) async {
+    final dio = Dio();
+    try {
+      final response = await dio.get('$host/api/noauth/qr/$key');
+      return LoginResponse.fromJson(response.data);
+    } catch (e) {
+      throw toThingsboardError(e);
+    }
+  }
+
+  AuthUser getAuthUserFromJwt(final String jwtToken) {
+    return AuthUser.fromJson(JwtDecoder.decode(jwtToken));
   }
 
   Future<void> sendResetPasswordLink(String email,
@@ -563,5 +629,10 @@ class ThingsboardClient {
   TwoFactorAuthService getTwoFactorAuthService() {
     _twoFactorAuthService ??= TwoFactorAuthService(this);
     return _twoFactorAuthService!;
+  }
+
+  NotificationsService getNotificationService() {
+    _notificationService ??= NotificationsService(this);
+    return _notificationService!;
   }
 }

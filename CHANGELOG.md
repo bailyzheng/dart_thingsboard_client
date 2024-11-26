@@ -1,3 +1,35 @@
+## 2.0.0
+
+- Enhanced TbStorage interface for improved usability.
+- Introduced a new API for alarm activity management, including support for comments and additional functionalities.
+
+## 1.3.1
+
+- Increased the minimum supported ThingsBoard version to 3.8.0.
+
+## 1.3.0
+
+- **New APIs:**
+    - `/api/alarm/types` - Fetches available alarm types.
+    - `/api/users/info` - Retrieves user information.
+
+- **Enhancements:**
+    - Added the ability to log request and response details for improved debugging.
+
+- **Bug Fixes:**
+    - Various minor bug fixes to improve stability and performance.
+
+## 1.2.0
+
+- Introduced the ability to configure access to custom applications using a login with a QR code feature. 
+- Update API and models according to ThingsBoard platform version 3.7.0
+- Fixed the issue with resolving supported platform versions. 
+- Implemented other minor fixes.
+
+## 1.1.1
+
+- Introduced a NotificationService, which allows you to receive notification data.
+
 ## 1.1.0
 
 - Updated the API and models to align with the latest ThingsBoard platform, version 3.6.3
