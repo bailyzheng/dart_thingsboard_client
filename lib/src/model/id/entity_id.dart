@@ -132,6 +132,7 @@ abstract class EntityId extends HasUuid {
   Map<String, dynamic> toJson() {
     var json = super.toJson();
     json['entityType'] = entityType.toShortString();
+    json['id'] = id;
     return json;
   }
 }
