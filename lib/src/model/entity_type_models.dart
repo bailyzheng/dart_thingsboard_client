@@ -2,8 +2,6 @@ import 'id/tenant_id.dart';
 
 enum EntityType {
   MHCAST,
-  MHSCREEN,
-  MHMEDIA,
   MHGOOD,
   MHORDER,
   MHMESSAGE,
