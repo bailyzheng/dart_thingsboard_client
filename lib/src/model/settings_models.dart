@@ -15,7 +15,7 @@ class AdminSettings extends BaseData<AdminSettingsId> with HasTenantId {
 
   AdminSettings.fromJson(Map<String, dynamic> json)
       : key = json['key'],
-      tenantId = TenantId.fromJson(json['tenantId']),
+        tenantId = TenantId.fromJson(json['tenantId']),
         jsonValue = json['jsonValue'],
         super.fromJson(json, (id) => AdminSettingsId(id));
 
@@ -23,6 +23,7 @@ class AdminSettings extends BaseData<AdminSettingsId> with HasTenantId {
   Map<String, dynamic> toJson() {
     var json = super.toJson();
     json['key'] = key;
+    json['tenantId'] = tenantId.toJson();
     json['jsonValue'] = jsonValue;
     return json;
   }
