@@ -75,6 +75,14 @@ class EntityData {
     return null;
   }
 
+  Map<String, dynamic> toJson() {
+    var json = <String, dynamic>{};
+    json['entityId'] = entityId.toJson();
+    json['latest'] = latest.map((k, v) => MapEntry(k.toShortString(), v));
+    // json['timeseries'] = timeseries;
+    return json;
+  }
+
   @override
   String toString() {
     return 'EntityData{entityId: $entityId, latest: $latest, timeseries: $timeseries, aggLatest: $aggLatest}';
