@@ -19,3 +19,7 @@ doc/api/
 
 tb_client_storage.json
 .DS_Store
+WARP.md
+*.log
+# FVM Version Cache
+.fvm/

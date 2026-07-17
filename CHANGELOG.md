@@ -1,3 +1,28 @@
+## 4.2.1
+- Fixed `AlarmType.fromJson` cast error when filtering alarms by type
+
+## 4.2.0
+- Added `ImageService` for managing image uploads
+- Fixed `AlarmComment.comment` deserialization into `AlarmCommentJsonNode`
+- Fixed analyzer warnings (unused imports, deprecation messages, identifier naming)
+
+## 4.1.0
+- Thingsboard 4.3.0+ support
+- Api key management
+- Api key auth support
+- 2Fa force support
+## 4.0.0
+- Changes in TbStorage interface
+
+## 3.0.1
+
+- Adapted to backend changes for version information representation.
+
+## 3.0.0
+
+- Introduced a new API for dynamically configuring via mobile center.
+- The minimum supported TB version is 3.9.0 and higher.
+
 ## 2.0.0
 
 - Enhanced TbStorage interface for improved usability.

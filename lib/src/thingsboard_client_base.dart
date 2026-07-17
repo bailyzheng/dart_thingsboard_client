@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:thingsboard_client/src/service/mobile_service.dart';
 
 import 'error/thingsboard_error.dart';
 import 'http/http_utils.dart';
@@ -31,10 +32,12 @@ class ThingsboardClient {
   final TbStorage _storage;
   final UserLoadedCallback? _userLoadedCallback;
   final MfaAuthCallback? _mfaAuthCallback;
+  final MfaAuthCallback? _mfaForceCallback;
   final ErrorCallback? _errorCallback;
   final LoadStartedCallback? _loadStartedCallback;
   final LoadFinishedCallback? _loadFinishedCallback;
   final TbCompute? _computeFunc;
+  final bool debugMode;
   bool _refreshTokenPending = false;
   String? _token;
   String? _refreshToken;
@@ -64,35 +67,44 @@ class ThingsboardClient {
   EdgeService? _edgeService;
   ResourceService? _resourceService;
   OtaPackageService? _otaPackageService;
+  ImageService? _imageService;
   TelemetryWebsocketService? _telemetryWebsocketService;
   QueueService? _queueService;
   EntitiesVersionControlService? _entitiesVersionControlService;
   TwoFactorAuthService? _twoFactorAuthService;
   NotificationsService? _notificationService;
-
+  MobileService? _mobileService;
+  ApiKeyService? _apiKeyService;
+  String? apiKey;
   factory ThingsboardClient(
     String apiEndpoint, {
     TbStorage? storage,
+    String? apiKey,
     UserLoadedCallback? onUserLoaded,
     MfaAuthCallback? onMfaAuth,
+    MfaAuthCallback? onMfaForce,
     ErrorCallback? onError,
     LoadStartedCallback? onLoadStarted,
     LoadFinishedCallback? onLoadFinished,
     TbCompute? computeFunc,
     bool debugMode = false,
+    BaseOptions? dioOptions,
   }) {
-    final dio = Dio();
+    final dio = Dio(dioOptions);
     dio.options.baseUrl = apiEndpoint;
     final tbClient = ThingsboardClient._internal(
         apiEndpoint,
         dio,
         storage,
+        apiKey,
         onUserLoaded,
         onMfaAuth,
+        onMfaForce,
         onError,
         onLoadStarted,
         onLoadFinished,
-        computeFunc ?? syncCompute);
+        computeFunc ?? syncCompute,
+        debugMode);
     dio.interceptors.clear();
 
     if (debugMode) {
@@ -119,16 +131,44 @@ class ThingsboardClient {
   }
 
   ThingsboardClient._internal(
-      this._apiEndpoint,
-      this._dio,
-      TbStorage? storage,
-      this._userLoadedCallback,
-      this._mfaAuthCallback,
-      this._errorCallback,
-      this._loadStartedCallback,
-      this._loadFinishedCallback,
-      this._computeFunc)
-      : _storage = storage ?? InMemoryStorage();
+    this._apiEndpoint,
+    this._dio,
+    TbStorage? storage,
+    this.apiKey,
+    this._userLoadedCallback,
+    this._mfaAuthCallback,
+    this._mfaForceCallback,
+    this._errorCallback,
+    this._loadStartedCallback,
+    this._loadFinishedCallback,
+    this._computeFunc,
+    this.debugMode,
+  ) : _storage = storage ?? InMemoryStorage();
+  Future<void> reInit(String endpoint) async {
+    _dio.options.baseUrl = endpoint;
+    _dio.interceptors.clear();
+
+    if (debugMode) {
+      _dio.interceptors.add(
+        PrettyDioLogger(
+          requestHeader: true,
+          requestBody: true,
+          responseHeader: true,
+          responseBody: true,
+        ),
+      );
+    }
+    _dio.interceptors.add(
+      HttpInterceptor(
+        _dio,
+        this,
+        this._loadStarted,
+        this._loadFinished,
+        this._onError,
+      ),
+    );
+    await init();
+  }
 
   void addDioInterceptor(Interceptor dioInterceptor) {
     _dio.interceptors.add(dioInterceptor);
@@ -163,6 +203,10 @@ class ThingsboardClient {
     }
   }
 
+  bool isApiKeyAuth() {
+    return apiKey?.isNotEmpty ?? false;
+  }
+
   Future<void> _checkPlatformVersion() async {
     String version = 'unknown';
     String type = 'unknown';
@@ -193,8 +237,10 @@ class ThingsboardClient {
   bool _isTokenValid(String? jwtToken) {
     if (jwtToken != null) {
       try {
-        return !JwtDecoder.isExpired(jwtToken);
+        final res = !JwtDecoder.isExpired(jwtToken);
+        return res;
       } catch (e) {
+        print(e);
         return false;
       }
     } else {
@@ -206,7 +252,9 @@ class ThingsboardClient {
     if (_telemetryWebsocketService != null) {
       _telemetryWebsocketService!.reset(true);
     }
-    if (this.isJwtTokenValid() && !this.isPreVerificationToken()) {
+    if (this.isJwtTokenValid() &&
+        !this.isPreVerificationToken() &&
+        !this.isMfaConfigurationToken()) {
       await _checkPlatformVersion();
     }
     if (_userLoadedCallback != null) {
@@ -217,6 +265,12 @@ class ThingsboardClient {
   void _mfaAuth() {
     if (_mfaAuthCallback != null) {
       Future(() => _mfaAuthCallback());
+    }
+  }
+
+  void _mfaForce() {
+    if (_mfaForceCallback != null) {
+      Future(() => _mfaForceCallback());
     }
   }
 
@@ -345,6 +399,9 @@ class ThingsboardClient {
     if (Authority.PRE_VERIFICATION_TOKEN == loginResponse.scope) {
       _mfaAuth();
     }
+    if (Authority.MFA_CONFIGURATION_TOKEN == loginResponse.scope) {
+      _mfaForce();
+    }
     return loginResponse;
   }
 
@@ -382,8 +439,20 @@ class ThingsboardClient {
   Future<LoginResponse> getLoginDataBySecretKey({
     required String host,
     required String key,
+    bool logging = false,
   }) async {
     final dio = Dio();
+    if (logging) {
+      dio.interceptors.add(
+        PrettyDioLogger(
+          requestHeader: true,
+          requestBody: true,
+          responseHeader: true,
+          responseBody: true,
+        ),
+      );
+    }
+
     try {
       final response = await dio.get('$host/api/noauth/qr/$key');
       return LoginResponse.fromJson(response.data);
@@ -493,6 +562,10 @@ class ThingsboardClient {
 
   bool isPreVerificationToken() {
     return _authUser != null && _authUser!.isPreVerificationToken();
+  }
+
+  bool isMfaConfigurationToken() {
+    return _authUser != null && _authUser!.isMfaConfigurationToken();
   }
 
   AssetService getAssetService() {
@@ -610,6 +683,11 @@ class ThingsboardClient {
     return _otaPackageService!;
   }
 
+  ImageService getImageService() {
+    _imageService ??= ImageService(this);
+    return _imageService!;
+  }
+
   TelemetryService getTelemetryService() {
     _telemetryWebsocketService ??=
         TelemetryWebsocketService(this, _apiEndpoint);
@@ -634,5 +712,15 @@ class ThingsboardClient {
   NotificationsService getNotificationService() {
     _notificationService ??= NotificationsService(this);
     return _notificationService!;
+  }
+
+  MobileService getMobileService() {
+    _mobileService ??= MobileService(this);
+    return _mobileService!;
+  }
+
+  ApiKeyService getApiKeyService() {
+    _apiKeyService ??= ApiKeyService(this);
+    return _apiKeyService!;
   }
 }
