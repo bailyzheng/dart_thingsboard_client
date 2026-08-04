@@ -1,7 +1,6 @@
 export 'mhcast_id.dart';
 export 'mhgood_id.dart';
 export 'mhorder_id.dart';
-export 'mhmessage_id.dart';
 export 'mhactivation_id.dart';
 export 'mhactivation_code_id.dart';
 export 'mhoss_id.dart';
