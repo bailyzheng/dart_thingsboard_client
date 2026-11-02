@@ -1,6 +1,6 @@
 export '_thingsboard_error_handler.dart'
     if (dart.library.io) '_thingsboard_error_handler_io.dart'
-    if (dart.library.html) '_thingsboard_error_handler_html.dart';
+    if (dart.library.js_interop) '_thingsboard_error_handler_html.dart';
 
 enum ThingsBoardErrorCode {
   general(2),

@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:html';
+import 'dart:io' show HttpStatus;
 import 'package:dio/dio.dart';
 
 import 'thingsboard_error.dart';
